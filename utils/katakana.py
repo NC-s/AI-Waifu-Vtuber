@@ -1,5 +1,6 @@
 import MeCab
-import unidic
+import ipadic
+# import unidic
 import pandas as pd
 import alkana
 import re
