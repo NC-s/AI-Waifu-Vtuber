@@ -1,6 +1,6 @@
 # Support
 
-if you find this Repo was helpful don't forget to give it a star. Thank you. Supports me on : [Ko-fi](https://ko-fi.com/ardhach)
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/R6R7AH1FA)
 
 ## Update
 
@@ -22,7 +22,7 @@ This project is inspired by shioridotdev and utilizes various technologies such 
 
 ## Technologies Used
 
- - [VoiceVox Docker](https://hub.docker.com/r/voicevox/voicevox_engine) or [VoiceVox Colab](https://github.com/SociallyIneptWeeb/LanguageLeapAI/blob/main/src/run_voicevox_colab.ipynb)
+ - [VoiceVox Docker](https://hub.docker.com/r/voicevox/voicevox_engine) or [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/SociallyIneptWeeb/LanguageLeapAI/blob/main/src/run_voicevox_colab.ipynb)
  - [DeepL](https://www.deepl.com/fr/account/summary)
  - [Deeplx](https://github.com/OwO-Network/DeepLX)
  - [Whisper OpenAI](https://platform.openai.com/account/api-keys)
@@ -148,14 +148,18 @@ Another option to solve this problem, you can upgrade the OpenAI library to the 
 
 2. Mecab Error
 
-this library is a little bit tricky to install. If you facing this problem, you can just delete and don't use the `katakana_converter` on `utils/TTS.py`. That function is optional, you can run the program without it
+this library is a little bit tricky to install. If you facing this problem, you can just delete and don't use the `katakana_converter` on `utils/TTS.py`. That function is optional, you can run the program without it. Delete this two line on `utils/TTS.py`  
 
 ```
 from utils.katakana import *
 katakana_text = katakana_converter(tts)
 ```
 
-delete this line on `run.py` and just pass the `tts` to next line of the code
+and just pass the `tts` to next line of the code
+
+```
+params_encoded = urllib.parse.urlencode({'text': tts, 'speaker': 46})
+```
 
 ## Credits
 

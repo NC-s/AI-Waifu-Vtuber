@@ -92,13 +92,17 @@ def record_audio():
 # Change this Line of Code to this. This will help you to get more information about the error
 def transcribe_audio(file):
     global chat_now
-    audio_file= open(file, "rb")
-    # Translating the audio to English
-    # transcript = openai.Audio.translate("whisper-1", audio_file)
-    # Transcribe the audio to detected language
-    transcript = openai.Audio.transcribe("whisper-1", audio_file)
-    chat_now = transcript.text
-    print ("Question: " + chat_now)
+    try:
+        audio_file= open(file, "rb")
+        # Translating the audio to English
+        # transcript = openai.Audio.translate("whisper-1", audio_file)
+        # Transcribe the audio to detected language
+        transcript = openai.Audio.transcribe("whisper-1", audio_file)
+        chat_now = transcript.text
+        print ("Question: " + chat_now)
+    except Exception as e:
+        print("Error transcribing audio: {0}".format(e))
+        return
 
     result = owner_name + " said " + chat_now
     conversation.append({'role': 'user', 'content': result})
@@ -108,19 +112,16 @@ def transcribe_audio(file):
 def openai_answer():
     global total_characters, conversation
 
-    for item in conversation:
-        if isinstance(item, dict) and "content" in item:
-            content = item["content"]
-            total_characters += len(content)
+    total_characters = sum(len(d['content']) for d in conversation)
 
     while total_characters > 4000:
         try:
             # print(total_characters)
             # print(len(conversation))
             conversation.pop(2)
-            total_characters -= len(conversation[2]["content"])
-        except:
-            print("Error: Prompt too long!")
+            total_characters = sum(len(d['content']) for d in conversation)
+        except Exception as e:
+            print("Error removing old messages: {0}".format(e))
 
     with open("conversation.json", "w", encoding="utf-8") as f:
         # Write the message data to the file in JSON format
@@ -142,27 +143,28 @@ def openai_answer():
 
 # function to capture livechat from youtube
 def yt_livechat(video_id):
-    try:
         global chat
 
         live = pytchat.create(video_id=video_id)
-        # while live.is_alive():
         while live.is_alive():
-            for c in live.get().sync_items():
-                # Ignore chat from the streamer and Nightbot, change this if you want to include the streamer's chat
-                if c.author.name in blacklist:
-                    continue
-                # if not c.message.startswith("!") and c.message.startswith('#'):
-                if not c.message.startswith("!"):
-                    # Remove emojis from the chat
-                    chat_raw = re.sub(r':[^\s]+:', '', c.message)
-                    # chat_author makes the chat look like this: "Nightbot: Hello". So the assistant can respond to the user's name
-                    chat = c.author.name + ' berkata ' + chat_raw
-                    print(chat)
-                    
-                time.sleep(1)
-    except KeyboardInterrupt:
-        print("Program stopped by user")
+        # while True:
+            try:
+                for c in live.get().sync_items():
+                    # Ignore chat from the streamer and Nightbot, change this if you want to include the streamer's chat
+                    if c.author.name in blacklist:
+                        continue
+                    # if not c.message.startswith("!") and c.message.startswith('#'):
+                    if not c.message.startswith("!"):
+                        # Remove emojis from the chat
+                        chat_raw = re.sub(r':[^\s]+:', '', c.message)
+                        chat_raw = chat_raw.replace('#', '')
+                        # chat_author makes the chat look like this: "Nightbot: Hello". So the assistant can respond to the user's name
+                        chat = c.author.name + ' berkata ' + chat_raw
+                        print(chat)
+                        
+                    time.sleep(1)
+            except Exception as e:
+                print("Error receiving chat: {0}".format(e))
 
 def twitch_livechat():
     global chat
@@ -179,7 +181,11 @@ def twitch_livechat():
     while True:
         try:
             resp = sock.recv(2048).decode('utf-8')
-            if not user in resp and not resp.startswith("!"):
+
+            if resp.startswith('PING'):
+                    sock.send("PONG\n".encode('utf-8'))
+
+            elif not user in resp:
                 resp = demojize(resp)
                 match = re.match(regex, resp)
 
@@ -192,8 +198,8 @@ def twitch_livechat():
                 chat = username + ' said ' + message
                 print(chat)
 
-        except:
-            print("Error receiving chat")
+        except Exception as e:
+            print("Error receiving chat: {0}".format(e))
 
 # translating is optional
 def translate_text(text):
@@ -212,16 +218,16 @@ def translate_text(text):
         # print("ID Answer: " + subtitle)
         print("JP Answer: " + tts)
         print("EN Answer: " + tts_en)
-    except:
-        print("Error translating text")
+    except Exception as e:
+        print("Error printing text: {0}".format(e))
         return
 
     # Choose between the available TTS engines
     # Japanese TTS
-    voicevox_tts(tts)
+    # voicevox_tts(tts)
 
     # Silero TTS, Silero TTS can generate English, Russian, French, Hindi, Spanish, German, etc. Uncomment the line below. Make sure the input is in that language
-    # silero_tts(tts_en, "en", "v3_en", "en_21")
+    silero_tts(tts_en, "en", "v3_en", "en_21")
 
     # Generate Subtitle
     generate_subtitle(chat_now, tts)
@@ -280,5 +286,6 @@ if __name__ == "__main__":
             t.start()
             twitch_livechat()
     except KeyboardInterrupt:
+        t.join()
         print("Stopped")
 
