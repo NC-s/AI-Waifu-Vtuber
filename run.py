@@ -34,7 +34,9 @@ chat = ""
 chat_now = ""
 chat_prev = ""
 is_Speaking = False
-owner_name = "Ardha"
+
+# Owner Name
+owner_name = "Shimo"
 blacklist = ["Nightbot", "streamelements"]
 
 # function to get the user's input audio
@@ -68,19 +70,35 @@ def record_audio():
     transcribe_audio("input.wav")
 
 # function to transcribe the user's audio
+# Original function
+# def transcribe_audio(file):
+#     global chat_now
+#     try:
+#         audio_file= open(file, "rb")
+#         # Translating the audio to English
+#         # transcript = openai.Audio.translate("whisper-1", audio_file)
+#         # Transcribe the audio to detected language
+#         transcript = openai.Audio.transcribe("whisper-1", audio_file)
+#         chat_now = transcript.text
+#         print ("Question: " + chat_now)
+#     except:
+#         print("Error transcribing audio")
+#         return
+
+#     result = owner_name + " said " + chat_now
+#     conversation.append({'role': 'user', 'content': result})
+#     openai_answer()
+
+# Change this Line of Code to this. This will help you to get more information about the error
 def transcribe_audio(file):
     global chat_now
-    try:
-        audio_file= open(file, "rb")
-        # Translating the audio to English
-        # transcript = openai.Audio.translate("whisper-1", audio_file)
-        # Transcribe the audio to detected language
-        transcript = openai.Audio.transcribe("whisper-1", audio_file)
-        chat_now = transcript.text
-        print ("Question: " + chat_now)
-    except:
-        print("Error transcribing audio")
-        return
+    audio_file= open(file, "rb")
+    # Translating the audio to English
+    # transcript = openai.Audio.translate("whisper-1", audio_file)
+    # Transcribe the audio to detected language
+    transcript = openai.Audio.transcribe("whisper-1", audio_file)
+    chat_now = transcript.text
+    print ("Question: " + chat_now)
 
     result = owner_name + " said " + chat_now
     conversation.append({'role': 'user', 'content': result})
@@ -182,16 +200,18 @@ def translate_text(text):
     global is_Speaking
     # subtitle will act as subtitle for the viewer
     # subtitle = translate_google(text, "ID")
+    # subtitle = translate_google(text, "JA")
 
     # tts will be the string to be converted to audio
     detect = detect_google(text)
     tts = translate_google(text, f"{detect}", "JA")
+    tts_en = translate_google(text, f"{detect}", "EN")
     # tts = translate_deeplx(text, f"{detect}", "JA")
-    # tts_en = translate_google(text, f"{detect}", "EN")
+    # tts_en = translate_deeplx(text, f"{detect}", "EN")
     try:
         # print("ID Answer: " + subtitle)
         print("JP Answer: " + tts)
-        # print("EN Answer: " + tts_en)
+        print("EN Answer: " + tts_en)
     except:
         print("Error translating text")
         return
@@ -204,7 +224,8 @@ def translate_text(text):
     # silero_tts(tts_en, "en", "v3_en", "en_21")
 
     # Generate Subtitle
-    generate_subtitle(chat_now, text)
+    generate_subtitle(chat_now, tts)
+    # generate_subtitle(chat_now, text)
 
     time.sleep(1)
 
